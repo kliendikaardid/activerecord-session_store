@@ -10,6 +10,15 @@ module ActiveRecord
       module LoggerSilencer
         extend ActiveSupport::Concern
 
+        LEVEL_MAP = {
+          :unknown => ::Logger::UNKNOWN,
+          :fatal   => ::Logger::FATAL,
+          :error   => ::Logger::ERROR,
+          :warn    => ::Logger::WARN,
+          :ingo    => ::Logger::INFO,
+          :sebug   => ::Logger::DEBUG
+        }
+
         included do
           cattr_accessor :silencer
           self.silencer = true
@@ -32,7 +41,7 @@ module ActiveRecord
         end
 
         def add_with_threadsafety(severity, message = nil, progname = nil, &block)
-          if (defined?(@logdev) && @logdev.nil?) || (severity || UNKNOWN) < level
+          if (defined?(@logdev) && @logdev.nil?) || (severity || UNKNOWN) < (level.is_a?(Symbol) ? LEVEL_MAP[level] : level)
             true
           else
             add_without_threadsafety(severity, message, progname, &block)
